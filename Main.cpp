@@ -27,15 +27,17 @@ public:
 		alpha = 255;
 		angle = static_cast<float>(rand() % 361);
 		body.setSize(sf::Vector2f(4.f, 4.f));
-		body.setOrigin(2.f, 2.f);
+		//body.setOrigin(2.f, 2.f);
 		body.setPosition(position);
 		lifetime = maxLifetime;
 		this->direction = direction;
+		body.setRotation(angle);
 	}
 
 	static void draw(sf::RenderWindow* window)
 	{
 		sf::VertexArray vertexArray;
+
 		vertexArray.setPrimitiveType(sf::Quads);
 		vertexArray.resize(particles.size() * 4);
 
@@ -43,20 +45,13 @@ public:
 
 		for (Particle& particle : particles)
 		{
-			const sf::FloatRect& bodyBounds{ particle.body.getGlobalBounds() };
-			particle.mesh[0] = sf::Vector2f(bodyBounds.left, bodyBounds.top);
-			particle.mesh[1] = sf::Vector2f(bodyBounds.left + bodyBounds.width, bodyBounds.top);
-			particle.mesh[2] = sf::Vector2f(bodyBounds.left + bodyBounds.width, bodyBounds.top + bodyBounds.height);
-			particle.mesh[3] = sf::Vector2f(bodyBounds.left, bodyBounds.top + bodyBounds.height);
-
-			sf::Transform transform;
-			transform.rotate(particle.angle);
-
+			sf::Transform transform { particle.body.getTransform() };
 			sf::Vertex* currentQuad{ &vertexArray[vertexPtr] };
 
 			for (int i{ 0 }; i < 4; i++)
 			{
-				currentQuad[i] = transform.transformPoint(particle.mesh[i]);
+				particle.mesh[i] = transform.transformPoint(particle.body.getPoint(i));
+				currentQuad[i] = particle.mesh[i];
 				currentQuad[i].color = currentColor;
 				currentQuad[i].color.a = particle.alpha;
 			}
@@ -71,11 +66,11 @@ public:
 	{
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			sf::Vector2f direction{ sf::Mouse::getPosition(*window).x - 100.f, sf::Mouse::getPosition(*window).y - 100.f };
+			sf::Vector2f direction{ sf::Mouse::getPosition(*window).x - 300.f, sf::Mouse::getPosition(*window).y - 300.f };
 			float magnitude{ sqrt(direction.x * direction.x + direction.y * direction.y) };
 			sf::Vector2f directionNormalized{ direction.x / magnitude, direction.y / magnitude };
 
-			particles.emplace_back(sf::Vector2f(100.f, 100.f), directionNormalized);
+			particles.emplace_back(sf::Vector2f(300.f, 300.f), directionNormalized);
 		}
 
 		for (Particle& particle : particles)
